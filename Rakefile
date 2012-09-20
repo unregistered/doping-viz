@@ -11,6 +11,7 @@ end
 desc "Build #{APPNAME}"
 task :build do
   Rake::Pipeline::Project.new('Assetfile').invoke
+  cp 'index.html', 'assets/index.html'
 end
 
 desc "Pack app in production mode"

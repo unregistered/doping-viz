@@ -38,7 +38,7 @@ end
 
 output 'assets'
 
-input 'app' do
+input 'app' do  
   match 'lib/**/*.coffee' do
     coffee_script
     

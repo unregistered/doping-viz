@@ -9,3 +9,16 @@ a {
 .navbar .brand {
   color: #fff;
 }
+
+.plot {
+    width: 100%;
+    height: 300px;
+}
+
+.control {
+    margin: 10px 0;
+}
+
+div:first {
+    display: none;
+}

@@ -1,1 +1,1 @@
-# require 'ember-skeleton/models/model'
+require 'ember-skeleton/models/data'

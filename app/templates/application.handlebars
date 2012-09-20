@@ -1,10 +1,43 @@
 <nav role="navigation" class="navbar navbar-fixed-top navbar-inverse">
   <div class="navbar-inner">
     <div class="container">
-      <a class="brand" href="#">ember-skeleton</a>
+      <a class="brand" href="#">Doping Viz</a>
     </div>
   </div>
 </nav>
 <div id="main" role="main" class="container">
-  ember-skeleton v{{App.VERSION}}
+    <div id="controls">
+        {{view App.ButtonGroup dataBinding="view.data"}}
+        
+        {{view App.Slider label="Temperature in K"
+        min="0"
+        max="500"
+        valueBinding="view.data.temp"
+        units="K"}}
+        
+        {{view App.LogSlider label="Donor Concentration"
+        min="0"
+        max="16"
+        valueBinding="view.data.N_d"
+        units="cm^-3"}}
+        
+        {{view App.LogSlider label="Acceptor Concentration"
+        min="0"
+        max="16"
+        valueBinding="view.data.N_a"
+        units="cm^-3"}}
+    </div>
+    
+    <div class="row">
+        <div class="span4">
+            {{view view.DensityStateGraphView}}
+        </div>
+        <div class="span4">
+            {{view view.FermiDriacGraphView}}
+        </div>
+        <div class="span4">
+            {{view view.DensityParticleGraphView}}
+        </div>
+    </div>
+    {{view view.DebugView}}
 </div>
