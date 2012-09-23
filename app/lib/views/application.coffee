@@ -83,6 +83,42 @@ App.LogSlider = App.Slider.extend(
     ).property('value')
 )
 
+App.GraphView = Ember.View.extend(
+    dataBinding: 'parentView.data'
+    classNames: ['plot']
+        
+    yminBinding: 'parentView.ymin'
+    ymaxBinding: 'parentView.ymax'
+    
+    showTooltip: (x, y, contents) ->
+        @set 'tooltip', $('<div class="flot-tooltip">' + contents + '</div>').css( {
+            position: 'absolute',
+            display: 'none',
+            top: y + 5,
+            left: x + 5,
+            border: '1px solid #fdd',
+            padding: '2px',
+            'background-color': '#fee',
+            opacity: 0.80
+        }).appendTo("body").fadeIn(200);
+            
+    didInsertElement: ->
+        @plotRerender()
+        @$().bind("plothover", (event, pos, item) =>
+            try
+                @get('tooltip').remove()
+            catch e
+                #
+                
+            if item
+                x = item.datapoint[0].toExponential(2)
+                y = item.datapoint[1].toExponential(2)
+                    
+                @showTooltip(item.pageX, item.pageY, x);
+                                           
+        )
+)
+
 App.ApplicationView = Ember.View.extend(
     dataBinding: "controller.content"
     templateName: "ember-skeleton/~templates/application"
@@ -115,21 +151,16 @@ App.ApplicationView = Ember.View.extend(
     ymin: -5
     ymax: 5
     
-    DensityStateGraphView: Ember.View.extend(
-        dataBinding: 'parentView.data'
-        classNames: ['plot', 'density-graph']
-        
-        yminBinding: 'parentView.ymin'
-        ymaxBinding: 'parentView.ymax'
-        
+    DensityStateGraphView: App.GraphView.extend(        
         options: (->
+            grid:
+                hoverable: true
             yaxis:
                 min: @get('ymin')
                 max: @get('ymax')
             xaxis:
                 tickFormatter: (val, axis) =>
                     return val.toExponential(0)
-
         ).property('ymin', 'ymax')
                 
         gc_points: (->
@@ -144,24 +175,17 @@ App.ApplicationView = Ember.View.extend(
             $.plot(@$(), [@get('gc_points'), @get('gv_points')], @get('options'))
         ).observes('gc_points', 'gv_points')
         
-        didInsertElement: ->
-            @plotRerender()
     )
     
-    DensityParticleGraphView: Ember.View.extend(
-        dataBinding: 'parentView.data'
-        classNames: ['plot', 'density-graph']
-        
-        yminBinding: 'parentView.ymin'
-        ymaxBinding: 'parentView.ymax'
-        
+    DensityParticleGraphView: App.GraphView.extend(        
         options: (->
-            ylim = Math.pow(100, 23)
+            grid:
+                hoverable: true
             yaxis:
                 min: @get('ymin')
                 max: @get('ymax')
             xaxis:
-                autoscaleMargin: 1
+                autoscaleMargin: 0.1
                 tickFormatter: (val, axis) =>
                     return val.toExponential(0)
         ).property('ymin', 'ymax')
@@ -175,7 +199,7 @@ App.ApplicationView = Ember.View.extend(
         ).property('data.g_v_changed', 'data.f_F_changed')
         
         plotRerender: (->
-            $.plot(@$(), [{
+            @set 'plot', $.plot(@$(), [{
                 label: "Electrons"
                 data: @get('n_points')
             }, {
@@ -184,19 +208,13 @@ App.ApplicationView = Ember.View.extend(
             }], @get('options'))
         ).observes('n_points', 'p_points')
         
-        didInsertElement: ->
-            @plotRerender()
     )
     
     
-    FermiDriacGraphView: Ember.View.extend(
-        dataBinding: 'parentView.data'
-        classNames: ['plot', 'fermi-driac-graph']
-            
-        yminBinding: 'parentView.ymin'
-        ymaxBinding: 'parentView.ymax'
-        
+    FermiDriacGraphView: App.GraphView.extend(
         options: (->
+            grid:
+                hoverable: true
             yaxis:
                 min: @get('ymin')
                 max: @get('ymax')
@@ -215,8 +233,5 @@ App.ApplicationView = Ember.View.extend(
                 data: @get('points')
             }], @get('options'))
         ).observes('points')
-        
-        didInsertElement: ->
-            @plotRerender()
     )
 )
