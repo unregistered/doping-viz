@@ -4,7 +4,6 @@ App.ButtonGroup = Ember.View.extend(
     className: 'control'
     data: null
     template: Ember.Handlebars.compile """
-    Material
     <div class="btn-group">
         {{view view.Button value="Si" targetBinding="view.data.material"}}
         {{view view.Button value="GaAs" targetBinding="view.data.material"}}
@@ -43,9 +42,15 @@ App.Slider = Ember.View.extend(
     classNames: ['slider-wrapper', 'row', 'control']
     
     template: Ember.Handlebars.compile """
-    <span class="span2">{{view.label}}</span>
-    <div class="slider span4"></div>
-    <span class="value span2">{{view.valueString}} {{view.units}}</span>
+    <div class="row control">
+        <div class="span2">{{view.label}}</div>
+        <div class="span4">
+            <div class="slider"></div>
+        </div>
+        <div class="span2">
+            <span class="value help-inline">{{view.valueString}} {{{view.units}}}</span>
+        </div>
+    </div>
     """
     
     valueString: (->
@@ -60,6 +65,7 @@ App.Slider = Ember.View.extend(
             min: @get('min')
             max: @get('max')
             step: (@get('max') - @get('min')) / 1000
+            value: @get('value')
             slide: (event, ui) =>
                 @set 'rawValue', ui.value
                 @sliderChangedValue ui.value
@@ -106,8 +112,8 @@ App.ApplicationView = Ember.View.extend(
         """
     )
     
-    ymin: -0.8
-    ymax: 0.8
+    ymin: -5
+    ymax: 5
     
     DensityStateGraphView: Ember.View.extend(
         dataBinding: 'parentView.data'
@@ -120,6 +126,10 @@ App.ApplicationView = Ember.View.extend(
             yaxis:
                 min: @get('ymin')
                 max: @get('ymax')
+            xaxis:
+                tickFormatter: (val, axis) =>
+                    return val.toExponential(0)
+
         ).property('ymin', 'ymax')
                 
         gc_points: (->
@@ -127,7 +137,7 @@ App.ApplicationView = Ember.View.extend(
         ).property('data.g_c_changed')
 
         gv_points: (->
-            ([@get('data').g_v(E), E] for E in [@get('ymin')..@get('ymax')] by 0.001)
+            ([@get('data').g_v(E), E] for E in [@get('ymin')..@get('ymax')] by 0.01)
         ).property('data.g_v_changed')
         
         plotRerender: (->
@@ -135,8 +145,7 @@ App.ApplicationView = Ember.View.extend(
         ).observes('gc_points', 'gv_points')
         
         didInsertElement: ->
-            el = @$()
-            $.plot(el, [ @get('gc_points'), @get('gv_points')], @get('options'))
+            @plotRerender()
     )
     
     DensityParticleGraphView: Ember.View.extend(
@@ -147,9 +156,14 @@ App.ApplicationView = Ember.View.extend(
         ymaxBinding: 'parentView.ymax'
         
         options: (->
+            ylim = Math.pow(100, 23)
             yaxis:
                 min: @get('ymin')
                 max: @get('ymax')
+            xaxis:
+                autoscaleMargin: 1
+                tickFormatter: (val, axis) =>
+                    return val.toExponential(0)
         ).property('ymin', 'ymax')
                 
         n_points: (->
@@ -157,16 +171,21 @@ App.ApplicationView = Ember.View.extend(
         ).property('data.g_c_changed', 'data.f_F_changed')
         
         p_points: (->
-            ([@get('data').g_v(E) * (1 - @get('data').f_F(E)), E] for E in [@get('ymin')..@get('ymax')] by 0.001)
+            ([@get('data').g_v(E) * (1 - @get('data').f_F(E)), E] for E in [@get('ymin')..@get('ymax')] by 0.01)
         ).property('data.g_v_changed', 'data.f_F_changed')
         
         plotRerender: (->
-            $.plot(@$(), [@get('n_points'), @get('p_points')], @get('options'))
+            $.plot(@$(), [{
+                label: "Electrons"
+                data: @get('n_points')
+            }, {
+                label: "Holes"
+                data: @get('p_points')
+            }], @get('options'))
         ).observes('n_points', 'p_points')
         
         didInsertElement: ->
-            el = @$()
-            $.plot(el, [ @get('n_points'), @get('p_points')], @get('options'))
+            @plotRerender()
     )
     
     
@@ -187,15 +206,17 @@ App.ApplicationView = Ember.View.extend(
         ).property('ymin', 'ymax')
 
         points: (->
-            ( [@get('data').f_F(x), x] for x in [@get('ymin')..@get('ymax')] by 0.001)
+            ( [@get('data').f_F(x), x] for x in [@get('ymin')..@get('ymax')] by 0.01)
         ).property('data.f_F_changed', 'ymin', 'ymax')
         
-        plotRenderer: (->
-            $.plot(@$(), [@get('points')], @get('options'))
+        plotRerender: (->
+            $.plot(@$(), [{
+                label: "Fermi-Driac Function"
+                data: @get('points')
+            }], @get('options'))
         ).observes('points')
         
         didInsertElement: ->
-            el = @$()
-            $.plot(el, [ @get('points') ], @get('options'))
+            @plotRerender()
     )
 )

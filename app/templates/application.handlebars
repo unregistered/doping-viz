@@ -6,38 +6,46 @@
   </div>
 </nav>
 <div id="main" role="main" class="container">
-    <div id="controls">
+    <div id="buttons">
         {{view App.ButtonGroup dataBinding="view.data"}}
-        
-        {{view App.Slider label="Temperature in K"
-        min="0"
-        max="500"
-        valueBinding="view.data.temp"
-        units="K"}}
-        
-        {{view App.LogSlider label="Donor Concentration"
-        min="0"
-        max="16"
-        valueBinding="view.data.N_d"
-        units="cm^-3"}}
-        
-        {{view App.LogSlider label="Acceptor Concentration"
-        min="0"
-        max="16"
-        valueBinding="view.data.N_a"
-        units="cm^-3"}}
     </div>
+    
+    
+    {{view App.Slider label="Temperature in K"
+    min="0"
+    max="500"
+    valueBinding="view.data.temp"
+    units="K"}}
+        
+    {{view App.LogSlider label="Donor Concentration"
+    min="0"
+    max="16"
+    valueBinding="view.data.N_d"
+    units="cm<sup>-3</sup>"}}
+        
+    {{view App.LogSlider label="Acceptor Concentration"
+    min="0"
+    max="16"
+    valueBinding="view.data.N_a"
+    units="cm<sup>-3</sup>"}}
     
     <div class="row">
         <div class="span4">
+            <span class="title">Density of States</span>
             {{view view.DensityStateGraphView}}
+            <span class="xlabel">Density (cm<sup>-3</sup> eV<sup>-1</sup>)</span>
         </div>
         <div class="span4">
+            <span class="title">Fermi-Driac Function</span>
             {{view view.FermiDriacGraphView}}
+            <span class="xlabel">Probability</span>
         </div>
         <div class="span4">
+            <span class="title">Particle Density</span>
             {{view view.DensityParticleGraphView}}
+            <span class="xlabel">Density (cm<sup>-3</sup> eV<sup>-1</sup>)</span>
         </div>
     </div>
-    {{view view.DebugView}}
+    <div id="ylabel">Energy (eV)</div>
+    <div id="footer"></div>
 </div>
