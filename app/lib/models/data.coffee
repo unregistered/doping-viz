@@ -128,7 +128,7 @@ App.Data = Ember.Object.extend(
     ).property('E_fi', 'kT', 'n0', 'n_i')
     
     f_F: (E) ->
-        # Fermi-Driac
+        # Fermi-Dirac
         exp_term = (E - @get('E_f')) / @get('kT')
         # console.log @get('E_f'), @get('kT')
         1 / ( 1 + Math.exp(exp_term) )

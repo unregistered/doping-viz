@@ -48,7 +48,7 @@ App.Slider = Ember.View.extend(
             <div class="slider"></div>
         </div>
         <div class="span2">
-            <span class="value help-inline">{{view.valueString}} {{{view.units}}}</span>
+            <span class="value help-inline">{{{view.valueString}}} {{{view.units}}}</span>
         </div>
     </div>
     """
@@ -79,7 +79,7 @@ App.LogSlider = App.Slider.extend(
     
     valueString: (->
         exp = @get 'rawValue'
-        "10^#{exp}"
+        "10<sup>#{exp}</sup>"
     ).property('value')
 )
 
@@ -148,8 +148,8 @@ App.ApplicationView = Ember.View.extend(
         """
     )
     
-    ymin: -5
-    ymax: 5
+    ymin: -3
+    ymax: 3
     
     DensityStateGraphView: App.GraphView.extend(        
         options: (->
@@ -211,7 +211,7 @@ App.ApplicationView = Ember.View.extend(
     )
     
     
-    FermiDriacGraphView: App.GraphView.extend(
+    FermiDiracGraphView: App.GraphView.extend(
         options: (->
             grid:
                 hoverable: true
