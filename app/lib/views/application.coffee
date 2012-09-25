@@ -286,7 +286,7 @@ App.ApplicationView = Ember.View.extend(
         
         plotRerender: (->
             $.plot(@$(), [{
-                label: "Fermi-Driac Function"
+                label: "Fermi-Dirac Function"
                 data: @get('points')
             }], @get('options'))
         ).observes('points')
