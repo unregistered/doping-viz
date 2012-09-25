@@ -122,7 +122,29 @@ App.GraphView = Ember.View.extend(
 App.ApplicationView = Ember.View.extend(
     dataBinding: "controller.content"
     templateName: "ember-skeleton/~templates/application"
+    
+    NumericView: Ember.View.extend(
+        dataBinding: "parentView.data"
+        template: Ember.Handlebars.compile """
+        <strong>n<sub>0</sub></strong> = {{view.n0}} cm<sup>-3</sup><br/>
+        <strong>p<sub>0</sub></strong> = {{view.p0}} cm<sup>-3</sup><br/>
+        <strong>E<sub>F</sub></strong> = {{view.E_f}} eV<sup>1</sup><br/>
+        """
         
+        
+        n0: (->
+            @get('data.n0').toExponential(3)
+        ).property('data.n0')
+        
+        p0: (->
+            @get('data.p0').toExponential(3)
+        ).property('data.p0')
+        
+        E_f: (->
+            @get('data.E_f').toExponential(2)
+        ).property('data.E_f')
+    )
+    
     DebugView: Ember.View.extend(
         dataBinding: "parentView.data"
         template: Ember.Handlebars.compile """
@@ -139,6 +161,7 @@ App.ApplicationView = Ember.View.extend(
             <li>N_v: {{view.data.N_v}}
             <li>kT: {{view.data.kT}}
             <li>n_i: {{view.data.n_i}}
+            <li>E_f: {{view.data.E_f}}
             </ul>
             <strong>Electron and hole concentration</strong>
             <ul>
@@ -148,8 +171,8 @@ App.ApplicationView = Ember.View.extend(
         """
     )
     
-    ymin: -3
-    ymax: 3
+    ymin: -2
+    ymax: 2
     
     DensityStateGraphView: App.GraphView.extend(        
         options: (->
@@ -168,7 +191,7 @@ App.ApplicationView = Ember.View.extend(
         ).property('data.g_c_changed')
 
         gv_points: (->
-            ([@get('data').g_v(E), E] for E in [@get('ymin')..@get('ymax')] by 0.01)
+            ([@get('data').g_v(E), E] for E in [@get('ymin')..@get('ymax')] by 0.001)
         ).property('data.g_v_changed')
         
         plotRerender: (->
@@ -185,18 +208,42 @@ App.ApplicationView = Ember.View.extend(
                 min: @get('ymin')
                 max: @get('ymax')
             xaxis:
+                min: 0
                 autoscaleMargin: 0.1
                 tickFormatter: (val, axis) =>
                     return val.toExponential(0)
+            hooks:
+                drawSeries: (plot, canvascontext, series) ->
+                    if series.label == "E<sub>F</sub>"
+                        series.datapoints.points[2] = 1e99
         ).property('ymin', 'ymax')
                 
-        n_points: (->
-            ([@get('data').g_c(E) * @get('data').f_F(E), E] for E in [@get('ymin')..@get('ymax')] by 0.001)
+        n_points: (->            
+            data = @get 'data'
+            
+            low = ( [data.g_c(E) * data.f_F(E), E] for E in [0..1] by 0.001)
+            mid = ( [data.g_c(E) * data.f_F(E), E] for E in [1..@get('ymax')] by 0.1)
+                        
+            return low.concat(mid)
         ).property('data.g_c_changed', 'data.f_F_changed')
         
         p_points: (->
-            ([@get('data').g_v(E) * (1 - @get('data').f_F(E)), E] for E in [@get('ymin')..@get('ymax')] by 0.01)
+            data = @get 'data'
+            
+            low = ([data.g_v(E) * (1 - data.f_F(E)), E] for E in [@get('ymin')..-1] by 0.1)
+            mid = ([data.g_v(E) * (1 - data.f_F(E)), E] for E in [-1..0.5] by 0.0005)
+            high =([data.g_v(E) * (1 - data.f_F(E)), E] for E in [-0.5..0] by 0.1)
+                            
+            return low.concat(mid)
         ).property('data.g_v_changed', 'data.f_F_changed')
+        
+        E_f_points: (->
+            ef = @get('data.E_f')
+            [
+                [0, ef],
+                [2e44, ef]
+            ]
+        ).property('data.E_f')
         
         plotRerender: (->
             @set 'plot', $.plot(@$(), [{
@@ -205,7 +252,11 @@ App.ApplicationView = Ember.View.extend(
             }, {
                 label: "Holes"
                 data: @get('p_points')
+            }, {
+                label: "E<sub>F</sub>"
+                data: @get('E_f_points')
             }], @get('options'))
+            
         ).observes('n_points', 'p_points')
         
     )
@@ -223,8 +274,14 @@ App.ApplicationView = Ember.View.extend(
                 max: 1.5
         ).property('ymin', 'ymax')
 
-        points: (->
-            ( [@get('data').f_F(x), x] for x in [@get('ymin')..@get('ymax')] by 0.01)
+        points: (->            
+            func = @get 'data'
+            
+            low = ( [func.f_F(x), x] for x in [@get('ymin')..-1] by 0.1)
+            mid = ( [func.f_F(x), x] for x in [-1..1] by 0.01)
+            high =( [func.f_F(x), x] for x in [1..@get('ymax')] by 0.1)
+            
+            return low.concat(mid, high)
         ).property('data.f_F_changed', 'ymin', 'ymax')
         
         plotRerender: (->

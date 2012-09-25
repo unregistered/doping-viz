@@ -124,15 +124,17 @@ App.Data = Ember.Object.extend(
     
     E_f: ( ->
         ratio = @get('n0') / @get('n_i')        
-        @get('E_fi') + @get('kT') * Math.log( ratio )
+        res = @get('E_fi') + @get('kT') * Math.log( ratio )
+        if isNaN(res)
+            return 0
+        else
+            return res
     ).property('E_fi', 'kT', 'n0', 'n_i')
     
     f_F: (E) ->
         # Fermi-Dirac
         exp_term = (E - @get('E_f')) / @get('kT')
-        # console.log @get('E_f'), @get('kT')
         1 / ( 1 + Math.exp(exp_term) )
-
 
     f_F_changed: (->
         true
