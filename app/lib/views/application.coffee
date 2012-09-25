@@ -128,7 +128,7 @@ App.ApplicationView = Ember.View.extend(
         template: Ember.Handlebars.compile """
         <strong>n<sub>0</sub></strong> = {{view.n0}} cm<sup>-3</sup><br/>
         <strong>p<sub>0</sub></strong> = {{view.p0}} cm<sup>-3</sup><br/>
-        <strong>E<sub>F</sub></strong> = {{view.E_f}} eV<sup>1</sup><br/>
+        <strong>E<sub>F</sub></strong> = {{view.E_f}} eV<br/>
         """
         
         
